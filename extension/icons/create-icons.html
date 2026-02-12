@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Create Extension Icons</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      background: white;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    h1 { color: #333; }
+    .icon-preview {
+      margin: 20px 0;
+      padding: 20px;
+      background: #f9f9f9;
+      border-radius: 8px;
+      text-align: center;
+    }
+    canvas {
+      border: 1px solid #ddd;
+      margin: 10px;
+    }
+    button {
+      padding: 12px 24px;
+      background: #667eea;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+    button:hover {
+      background: #5a6fd6;
+    }
+    .instructions {
+      margin-top: 20px;
+      padding: 15px;
+      background: #fff3cd;
+      border-radius: 6px;
+      border-left: 4px solid #ffc107;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🔧 Extension Icon Generator</h1>
+    <p>Click the button below to generate PNG icons for the extension.</p>
+    
+    <div class="icon-preview">
+      <canvas id="canvas16" width="16" height="16"></canvas>
+      <canvas id="canvas48" width="48" height="48"></canvas>
+      <canvas id="canvas128" width="128" height="128"></canvas>
+    </div>
+    
+    <button onclick="generateIcons()">Generate Icons</button>
+    
+    <div class="instructions">
+      <strong>Instructions:</strong>
+      <ol>
+        <li>Click "Generate Icons" above</li>
+        <li>Right-click each canvas and "Save image as..."</li>
+        <li>Save them as:
+          <ul>
+            <li>icon16.png (16x16)</li>
+            <li>icon48.png (48x48)</li>
+            <li>icon128.png (128x128)</li>
+          </ul>
+        </li>
+        <li>Place them in the icons folder</li>
+      </ol>
+    </div>
+  </div>
+
+  <script>
+    function drawIcon(canvas, size) {
+      const ctx = canvas.getContext('2d');
+      
+      // Background gradient
+      const gradient = ctx.createLinearGradient(0, 0, size, size);
+      gradient.addColorStop(0, '#667eea');
+      gradient.addColorStop(1, '#764ba2');
+      
+      // Rounded rectangle background
+      ctx.fillStyle = gradient;
+      roundRect(ctx, 0, 0, size, size, size * 0.15);
+      ctx.fill();
+      
+      // Text
+      ctx.fillStyle = 'white';
+      ctx.font = `bold ${size * 0.45}px Arial, sans-serif`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('API', size / 2, size / 2 + size * 0.05);
+      
+      // Status dot
+      ctx.fillStyle = '#4caf50';
+      ctx.beginPath();
+      ctx.arc(size * 0.78, size * 0.22, size * 0.1, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    
+    function roundRect(ctx, x, y, width, height, radius) {
+      ctx.beginPath();
+      ctx.moveTo(x + radius, y);
+      ctx.lineTo(x + width - radius, y);
+      ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+      ctx.lineTo(x + width, y + height - radius);
+      ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+      ctx.lineTo(x + radius, y + height);
+      ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+      ctx.lineTo(x, y + radius);
+      ctx.quadraticCurveTo(x, y, x + radius, y);
+      ctx.closePath();
+    }
+    
+    function generateIcons() {
+      drawIcon(document.getElementById('canvas16'), 16);
+      drawIcon(document.getElementById('canvas48'), 48);
+      drawIcon(document.getElementById('canvas128'), 128);
+      
+      alert('Icons generated! Right-click each canvas to save them.');
+    }
+    
+    // Generate on load
+    window.onload = generateIcons;
+  </script>
+</body>
+</html>

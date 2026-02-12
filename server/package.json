@@ -1,0 +1,36 @@
+{
+  "name": "api-rate-limit-dashboard-server",
+  "version": "1.0.0",
+  "description": "API Rate Limit Dashboard Backend",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js",
+    "migrate": "npx prisma migrate dev",
+    "migrate:prod": "npx prisma migrate deploy",
+    "generate": "npx prisma generate",
+    "studio": "npx prisma studio",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "@prisma/adapter-pg": "^7.4.0",
+    "@prisma/client": "^7.4.0",
+    "bcrypt": "^6.0.0",
+    "cors": "^2.8.6",
+    "dotenv": "^17.2.4",
+    "express": "^5.2.1",
+    "express-rate-limit": "^8.2.1",
+    "helmet": "^8.1.0",
+    "jsonwebtoken": "^9.0.3",
+    "pg": "^8.18.0",
+    "zod": "^4.3.6"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.11",
+    "prisma": "^7.4.0"
+  }
+}

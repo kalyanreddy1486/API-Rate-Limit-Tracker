@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>API Rate Limit Tracker</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      width: 380px;
+      min-height: 500px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #f5f5f5;
+    }
+    
+    .header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 20px;
+      text-align: center;
+    }
+    
+    .header h1 {
+      font-size: 18px;
+      margin-bottom: 5px;
+    }
+    
+    .header p {
+      font-size: 12px;
+      opacity: 0.9;
+    }
+    
+    .content {
+      padding: 15px;
+    }
+    
+    .section {
+      background: white;
+      border-radius: 8px;
+      padding: 15px;
+      margin-bottom: 15px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .section-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: #333;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .api-list {
+      max-height: 200px;
+      overflow-y: auto;
+    }
+    
+    .api-item {
+      padding: 10px;
+      border-bottom: 1px solid #eee;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    
+    .api-item:hover {
+      background: #f8f9fa;
+    }
+    
+    .api-item:last-child {
+      border-bottom: none;
+    }
+    
+    .api-name {
+      font-weight: 500;
+      font-size: 13px;
+      color: #333;
+    }
+    
+    .api-usage {
+      font-size: 11px;
+      color: #666;
+      margin-top: 4px;
+    }
+    
+    .progress-bar {
+      height: 6px;
+      background: #e0e0e0;
+      border-radius: 3px;
+      margin-top: 6px;
+      overflow: hidden;
+    }
+    
+    .progress-fill {
+      height: 100%;
+      border-radius: 3px;
+      transition: width 0.3s;
+    }
+    
+    .progress-fill.safe { background: #4caf50; }
+    .progress-fill.warning { background: #ff9800; }
+    .progress-fill.critical { background: #f44336; }
+    
+    .btn {
+      width: 100%;
+      padding: 10px;
+      border: none;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .btn-primary {
+      background: #667eea;
+      color: white;
+    }
+    
+    .btn-primary:hover {
+      background: #5a6fd6;
+    }
+    
+    .btn-secondary {
+      background: #f0f0f0;
+      color: #333;
+      margin-top: 8px;
+    }
+    
+    .btn-secondary:hover {
+      background: #e0e0e0;
+    }
+    
+    .settings-form {
+      display: none;
+    }
+    
+    .settings-form.active {
+      display: block;
+    }
+    
+    .form-group {
+      margin-bottom: 12px;
+    }
+    
+    .form-group label {
+      display: block;
+      font-size: 12px;
+      color: #666;
+      margin-bottom: 4px;
+    }
+    
+    .form-group input {
+      width: 100%;
+      padding: 8px 10px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 13px;
+    }
+    
+    .status {
+      text-align: center;
+      padding: 20px;
+      color: #666;
+      font-size: 13px;
+    }
+    
+    .status.error {
+      color: #f44336;
+    }
+    
+    .status.success {
+      color: #4caf50;
+    }
+    
+    .quick-track {
+      display: flex;
+      gap: 8px;
+      margin-top: 10px;
+    }
+    
+    .quick-track select {
+      flex: 1;
+      padding: 8px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 12px;
+    }
+    
+    .quick-track button {
+      padding: 8px 15px;
+      background: #4caf50;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 12px;
+    }
+    
+    .badge {
+      display: inline-block;
+      padding: 2px 6px;
+      border-radius: 3px;
+      font-size: 10px;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+    
+    .badge.safe { background: #e8f5e9; color: #2e7d32; }
+    .badge.warning { background: #fff3e0; color: #ef6c00; }
+    .badge.critical { background: #ffebee; color: #c62828; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>🔐 API Rate Limit Tracker</h1>
+    <p>Monitor your API usage in real-time</p>
+  </div>
+  
+  <div class="content">
+    <!-- API List Section -->
+    <div class="section" id="apiSection">
+      <div class="section-title">
+        <span>📊</span> Your APIs
+      </div>
+      <div class="api-list" id="apiList">
+        <div class="status">Loading...</div>
+      </div>
+    </div>
+    
+    <!-- Quick Track Section -->
+    <div class="section">
+      <div class="section-title">
+        <span>⚡</span> Quick Track
+      </div>
+      <div class="quick-track">
+        <select id="quickApiSelect">
+          <option value="">Select API</option>
+        </select>
+        <button id="quickTrackBtn">+1</button>
+      </div>
+    </div>
+    
+    <!-- Settings Section -->
+    <div class="section">
+      <div class="section-title">
+        <span>⚙️</span> Settings
+      </div>
+      <button class="btn btn-secondary" id="toggleSettingsBtn">
+        Configure Dashboard
+      </button>
+      
+      <div class="settings-form" id="settingsForm">
+        <div class="form-group">
+          <label>Dashboard URL</label>
+          <input type="text" id="dashboardUrl" placeholder="http://localhost:3000" value="http://localhost:3000">
+        </div>
+        <div class="form-group">
+          <label>Email</label>
+          <input type="email" id="email" placeholder="your@email.com">
+        </div>
+        <div class="form-group">
+          <label>Password</label>
+          <input type="password" id="password" placeholder="Your password">
+        </div>
+        <button class="btn btn-primary" id="saveSettingsBtn">Save Settings</button>
+      </div>
+    </div>
+    
+    <!-- Actions -->
+    <div class="section">
+      <button class="btn btn-primary" id="openDashboardBtn">
+        Open Full Dashboard
+      </button>
+      <button class="btn btn-secondary" id="refreshDataBtn">
+        Refresh Data
+      </button>
+    </div>
+  </div>
+  
+  <script src="popup.js"></script>
+</body>
+</html>

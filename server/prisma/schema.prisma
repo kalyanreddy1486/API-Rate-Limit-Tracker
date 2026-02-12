@@ -1,0 +1,70 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id            String   @id @default(uuid())
+  email         String   @unique
+  passwordHash  String   @map("password_hash")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  apis          API[]
+  alerts        Alert[]
+
+  @@map("users")
+}
+
+model API {
+  id                String   @id @default(uuid())
+  userId            String   @map("user_id")
+  serviceName       String   @map("service_name")
+  apiKeyEncrypted   String   @map("api_key_encrypted")
+  rateLimit         Int      @map("rate_limit")
+  rateLimitPeriod   String   @map("rate_limit_period")
+  currentUsage      Int      @default(0) @map("current_usage")
+  lastReset         DateTime @default(now()) @map("last_reset")
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  usageHistory      UsageHistory[]
+  alerts            Alert[]
+
+  @@index([userId])
+  @@map("apis")
+}
+
+model UsageHistory {
+  id            String   @id @default(uuid())
+  apiId         String   @map("api_id")
+  requestsCount Int      @map("requests_count")
+  timestamp     DateTime @default(now())
+  period        String
+
+  api           API      @relation(fields: [apiId], references: [id], onDelete: Cascade)
+
+  @@index([apiId, timestamp])
+  @@map("usage_history")
+}
+
+model Alert {
+  id                  String    @id @default(uuid())
+  userId              String    @map("user_id")
+  apiId               String    @map("api_id")
+  thresholdPercentage Int       @map("threshold_percentage")
+  isActive            Boolean   @default(true) @map("is_active")
+  lastTriggered       DateTime? @map("last_triggered")
+  createdAt           DateTime  @default(now()) @map("created_at")
+
+  user                User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  api                 API       @relation(fields: [apiId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([apiId])
+  @@map("alerts")
+}
